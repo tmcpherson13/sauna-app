@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getDeviceStatus } from "@/lib/tuya";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const deviceId = process.env.TUYA_HEATER_DEVICE_ID!;
