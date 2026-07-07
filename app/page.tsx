@@ -90,9 +90,7 @@ export default function Home() {
       if (!data.on) {
         setHeatingState("idle");
       } else {
-        const recent = history.filter((s) => now - s.t <= 3 * 60 * 1000);
-        const shortRate = estimateRate(recent);
-        setHeatingState(shortRate !== null && shortRate > 0.1 ? "heating" : "holding");
+        setHeatingState("heating");
       }
     } catch (e: any) {
       setError(e.message);
@@ -171,8 +169,7 @@ export default function Home() {
   const frac = target > 0 ? Math.max(0, Math.min(1, current / target)) : 0;
   const dash = `${frac * CIRC} ${CIRC}`;
 
-  const stateLabel =
-    heatingState === "heating" ? "Heating" : heatingState === "holding" ? "Holding" : "Idle";
+  const stateLabel = heatingState === "heating" ? "Heating" : "Idle";
 
   return (
     <div className="wrap">
