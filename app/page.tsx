@@ -115,7 +115,7 @@ export default function Home() {
       const res = await fetch("/api/heater/toggle", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ on: !status.on }),
+        body: JSON.stringify({ on: !status.on, targetTempF: targetInput }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
