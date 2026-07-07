@@ -13,7 +13,7 @@ type Status = {
 type Sample = { t: number; temp: number };
 
 const HISTORY_KEY = "sauna_temp_history";
-const HISTORY_WINDOW_MS = 20 * 60 * 1000; // 20 min
+const HISTORY_WINDOW_MS = 20 * 60 * 1000;
 
 function loadHistory(): Sample[] {
   try {
@@ -30,11 +30,10 @@ function saveHistory(samples: Sample[]) {
   } catch {}
 }
 
-// Simple linear regression slope (°F per minute)
 function estimateRate(samples: Sample[]): number | null {
   if (samples.length < 2) return null;
   const t0 = samples[0].t;
-  const xs = samples.map((s) => (s.t - t0) / 60000); // minutes
+  const xs = samples.map((s) => (s.t - t0) / 60000);
   const ys = samples.map((s) => s.temp);
   const n = xs.length;
   const sumX = xs.reduce((a, b) => a + b, 0);
@@ -46,6 +45,9 @@ function estimateRate(samples: Sample[]): number | null {
   return (n * sumXY - sumX * sumY) / denom;
 }
 
+const R = 100;
+const CIRC = 2 * Math.PI * R;
+
 export default function Home() {
   const [status, setStatus] = useState<Status | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -53,6 +55,7 @@ export default function Home() {
   const [timerInput, setTimerInput] = useState(30);
   const [targetInput, setTargetInput] = useState(150);
   const [etaMinutes, setEtaMinutes] = useState<number | null>(null);
+  const [heatingState, setHeatingState] = useState<"idle" | "heating" | "holding">("idle");
   const historyRef = useRef<Sample[]>([]);
 
   const fetchStatus = useCallback(async () => {
@@ -82,6 +85,14 @@ export default function Home() {
         }
       } else {
         setEtaMinutes(null);
+      }
+
+      if (!data.on) {
+        setHeatingState("idle");
+      } else {
+        const recent = history.filter((s) => now - s.t <= 3 * 60 * 1000);
+        const shortRate = estimateRate(recent);
+        setHeatingState(shortRate !== null && shortRate > 0.1 ? "heating" : "holding");
       }
     } catch (e: any) {
       setError(e.message);
@@ -155,35 +166,82 @@ export default function Home() {
   }
 
   const on = status?.on ?? false;
+  const current = status?.currentTempF ?? 0;
+  const target = status?.targetTempF ?? targetInput;
+  const frac = target > 0 ? Math.max(0, Math.min(1, current / target)) : 0;
+  const dash = `${frac * CIRC} ${CIRC}`;
+
+  const stateLabel =
+    heatingState === "heating" ? "Heating" : heatingState === "holding" ? "Holding" : "Idle";
 
   return (
     <div className="wrap">
       <div className="panel">
-        <div className="eyebrow">Backyard Sauna</div>
-        <h1>Heater Control</h1>
+        <div className="topbar">
+          <span className="topbar-title">Backyard Sauna</span>
+          <span className="topbar-sub">
+            {status ? "Connected" : error ? "Offline" : "Connecting..."}
+          </span>
+        </div>
 
-        <div className={`gauge ${on ? "on" : "off"}`}>
-          <div className="gauge-face">
-            <div className="gauge-state">
-              {status ? `${Math.round(status.currentTempF)}°F` : "..."}
-            </div>
-            <div className="gauge-sub">
-              {on ? "Heating" : "Idle"}
-              {etaMinutes !== null && ` · ~${etaMinutes} min to target`}
+        <div className="gauge-wrap">
+          <svg viewBox="0 0 220 220">
+            <defs>
+              <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#f0a24a" />
+                <stop offset="100%" stopColor="#d6431f" />
+              </linearGradient>
+            </defs>
+            <circle className="gauge-track" cx="110" cy="110" r={R} />
+            <circle
+              className="gauge-progress"
+              cx="110"
+              cy="110"
+              r={R}
+              stroke="url(#gaugeGrad)"
+              strokeDasharray={dash}
+            />
+          </svg>
+          <div className="gauge-center">
+            <div className="gauge-temp">{status ? Math.round(current) : "--"}°F</div>
+            <div className="gauge-target">Target {Math.round(target)}°F</div>
+            <div className="gauge-meta">
+              {stateLabel}
+              {etaMinutes !== null && ` · ~${etaMinutes} min left`}
             </div>
           </div>
         </div>
 
         <button
-          className={`lever ${on ? "stop" : ""}`}
+          className={`cta ${on ? "" : "off"}`}
           onClick={toggle}
           disabled={busy || !status}
         >
-          {on ? "Turn Off" : "Turn On"}
+          <span className="cta-title">
+            {on ? "Turn off" : `Preheat to ${targetInput}°F`}
+          </span>
+          <span className="cta-sub">
+            {on
+              ? etaMinutes !== null
+                ? `~${etaMinutes} min to target`
+                : stateLabel
+              : "Tap to start"}
+          </span>
         </button>
 
-        <div className="timer-block">
-          <div className="timer-label">
+        <div className="status-row">
+          <div className="status-card">
+            <span className="status-label">{on ? "Running" : "Idle"}</span>
+            <span className="status-sub">Heater · {status ? "online" : "..."}</span>
+          </div>
+          <div className="status-card">
+            <span className="status-label">{timerInput} min</span>
+            <span className="status-sub">Auto-off timer</span>
+          </div>
+        </div>
+
+        <div className="control-block">
+          <div className="control-label">
             <span>Target temperature</span>
             <strong>{targetInput}°F</strong>
           </div>
@@ -195,13 +253,13 @@ export default function Home() {
             value={targetInput}
             onChange={(e) => setTargetInput(Number(e.target.value))}
           />
-          <button className="lever" onClick={applyTarget} disabled={busy}>
-            Set Target
+          <button className="set-btn" onClick={applyTarget} disabled={busy}>
+            Set target
           </button>
         </div>
 
-        <div className="timer-block">
-          <div className="timer-label">
+        <div className="control-block">
+          <div className="control-label">
             <span>Auto-off timer</span>
             <strong>{timerInput} min</strong>
           </div>
@@ -213,8 +271,8 @@ export default function Home() {
             value={timerInput}
             onChange={(e) => setTimerInput(Number(e.target.value))}
           />
-          <button className="lever" onClick={applyTimer} disabled={busy}>
-            Set Timer
+          <button className="set-btn" onClick={applyTimer} disabled={busy}>
+            Set timer
           </button>
         </div>
 

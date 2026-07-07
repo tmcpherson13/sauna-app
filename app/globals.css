@@ -1,15 +1,17 @@
-@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
 :root {
-  --charcoal: #1c1410;
-  --charcoal-2: #241a14;
-  --cedar: #a8703f;
-  --cedar-dark: #6b4423;
-  --cream: #f2e6d3;
+  --bg: #0b0b0d;
+  --card: #16161a;
+  --card-2: #1e1e23;
+  --text: #f5f3ef;
+  --text-dim: rgba(245, 243, 239, 0.55);
+  --text-dimmer: rgba(245, 243, 239, 0.35);
+  --amber: #f0a24a;
+  --ember: #d6431f;
   --cold: #4a7fe0;
-  --warm: #e8a33d;
-  --hot: #d6431f;
-  --line: rgba(242, 230, 211, 0.12);
+  --line: rgba(255, 255, 255, 0.08);
+  --green: #3ecf72;
 }
 
 * {
@@ -20,8 +22,8 @@ html,
 body {
   margin: 0;
   padding: 0;
-  background: var(--charcoal);
-  color: var(--cream);
+  background: var(--bg);
+  color: var(--text);
   font-family: "Inter", sans-serif;
   min-height: 100vh;
 }
@@ -29,179 +31,219 @@ body {
 .wrap {
   min-height: 100vh;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 24px;
-  background:
-    radial-gradient(ellipse 800px 500px at 50% -10%, rgba(168, 112, 63, 0.18), transparent),
-    repeating-linear-gradient(
-      100deg,
-      var(--charcoal) 0px,
-      var(--charcoal) 40px,
-      var(--charcoal-2) 40px,
-      var(--charcoal-2) 42px
-    );
+  padding: 32px 20px;
 }
 
 .panel {
   width: 100%;
-  max-width: 420px;
+  max-width: 400px;
   display: flex;
   flex-direction: column;
+  gap: 20px;
+}
+
+.topbar {
+  display: flex;
   align-items: center;
-  gap: 28px;
+  justify-content: space-between;
 }
 
-.eyebrow {
-  font-family: "Inter", sans-serif;
-  font-size: 12px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--cedar);
+.topbar-title {
+  font-size: 17px;
   font-weight: 600;
 }
 
-h1 {
-  font-family: "Fraunces", serif;
-  font-weight: 600;
-  font-size: 30px;
-  margin: 0;
-  text-align: center;
-  color: var(--cream);
+.topbar-sub {
+  font-size: 13px;
+  color: var(--green);
+  font-weight: 500;
 }
 
-/* Gauge - echoes the wall-mounted analog dials in the sauna */
-.gauge {
+/* Gauge */
+.gauge-wrap {
   position: relative;
-  width: 220px;
-  height: 220px;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 50% 50%, var(--charcoal-2) 0%, var(--charcoal-2) 62%, transparent 63%),
-    conic-gradient(
-      from 210deg,
-      var(--cold) 0deg,
-      var(--warm) 90deg,
-      var(--hot) 150deg,
-      var(--line) 150deg,
-      var(--line) 360deg
-    );
+  width: 100%;
+  aspect-ratio: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 6px solid var(--cedar-dark);
-  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5), 0 8px 24px rgba(0, 0, 0, 0.4);
-  transition: filter 0.4s ease;
 }
 
-.gauge.off {
-  filter: grayscale(0.6) brightness(0.55);
+.gauge-wrap svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
 }
 
-.gauge.on {
-  animation: pulse 2.4s ease-in-out infinite;
+.gauge-track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.06);
+  stroke-width: 14;
 }
 
-@keyframes pulse {
-  0%, 100% { box-shadow: inset 0 0 30px rgba(0,0,0,0.5), 0 8px 24px rgba(214,67,31,0.25); }
-  50% { box-shadow: inset 0 0 30px rgba(0,0,0,0.5), 0 8px 44px rgba(214,67,31,0.5); }
+.gauge-progress {
+  fill: none;
+  stroke-width: 14;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 14px rgba(214, 67, 31, 0.55));
+  transition: stroke-dasharray 0.4s ease;
 }
 
-.gauge-face {
-  position: relative;
-  z-index: 2;
+.gauge-center {
+  position: absolute;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 
-.gauge-state {
-  font-family: "Fraunces", serif;
-  font-size: 22px;
+.gauge-temp {
+  font-size: 64px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.gauge-target {
+  font-size: 15px;
   font-weight: 600;
+  color: var(--text-dim);
 }
 
-.gauge-sub {
-  font-size: 12px;
-  color: rgba(242, 230, 211, 0.6);
-  letter-spacing: 0.05em;
+.gauge-meta {
+  font-size: 13px;
+  color: var(--text-dimmer);
 }
 
-/* Lever-style toggle */
-.lever {
-  position: relative;
-  width: 100%;
+/* CTA button */
+.cta {
   border: none;
-  border-radius: 14px;
-  padding: 18px 24px;
-  font-family: "Fraunces", serif;
-  font-size: 18px;
-  font-weight: 600;
+  border-radius: 16px;
+  padding: 18px 20px;
+  background: linear-gradient(135deg, var(--amber), var(--ember));
+  color: #1a0d05;
+  font-family: "Inter", sans-serif;
   cursor: pointer;
-  color: var(--cream);
-  background: linear-gradient(180deg, var(--cedar) 0%, var(--cedar-dark) 100%);
-  box-shadow: 0 4px 0 #4a2f18, 0 6px 16px rgba(0,0,0,0.35);
-  transition: transform 0.08s ease, box-shadow 0.08s ease;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.lever:active {
-  transform: translateY(3px);
-  box-shadow: 0 1px 0 #4a2f18, 0 2px 8px rgba(0,0,0,0.35);
+.cta-title {
+  font-size: 17px;
+  font-weight: 700;
 }
 
-.lever.stop {
-  background: linear-gradient(180deg, #5a2620 0%, #3a1815 100%);
-  box-shadow: 0 4px 0 #2a100d, 0 6px 16px rgba(0,0,0,0.35);
+.cta-sub {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(26, 13, 5, 0.7);
 }
 
-.lever:disabled {
-  opacity: 0.5;
+.cta.off {
+  background: var(--card-2);
+  color: var(--text);
+}
+
+.cta.off .cta-sub {
+  color: var(--text-dim);
+}
+
+.cta:disabled {
+  opacity: 0.6;
   cursor: wait;
 }
 
-/* Timer */
-.timer-block {
-  width: 100%;
+/* Status cards */
+.status-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.status-card {
+  background: var(--card);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.status-label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.status-sub {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+/* Control block (temp + timer sliders) */
+.control-block {
+  background: var(--card);
+  border-radius: 14px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.timer-label {
+.control-label {
   display: flex;
   justify-content: space-between;
   font-size: 13px;
-  color: rgba(242, 230, 211, 0.7);
+  color: var(--text-dim);
 }
 
-.timer-label strong {
-  color: var(--cream);
-  font-family: "Fraunces", serif;
-  font-size: 16px;
+.control-label strong {
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 600;
 }
 
 input[type="range"] {
   -webkit-appearance: none;
   width: 100%;
-  height: 6px;
-  border-radius: 3px;
-  background: linear-gradient(90deg, var(--cedar-dark), var(--cedar));
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.12);
   outline: none;
 }
 
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  background: var(--cream);
-  border: 3px solid var(--cedar-dark);
+  background: var(--amber);
   cursor: pointer;
+  box-shadow: 0 0 8px rgba(240, 162, 74, 0.6);
+}
+
+.set-btn {
+  align-self: flex-start;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--text);
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: "Inter", sans-serif;
+}
+
+.set-btn:hover {
+  background: var(--card-2);
 }
 
 .error {
-  color: var(--hot);
+  color: var(--ember);
   font-size: 13px;
   text-align: center;
 }
@@ -214,6 +256,13 @@ input[type="range"]::-webkit-slider-thumb {
   flex-direction: column;
   gap: 16px;
   align-items: center;
+  margin: auto;
+}
+
+.login-card h1 {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0;
 }
 
 .login-card input {
@@ -221,12 +270,25 @@ input[type="range"]::-webkit-slider-thumb {
   padding: 14px 16px;
   border-radius: 10px;
   border: 1px solid var(--line);
-  background: var(--charcoal-2);
-  color: var(--cream);
+  background: var(--card);
+  color: var(--text);
   font-size: 16px;
   font-family: "Inter", sans-serif;
 }
 
 .login-card input:focus {
-  outline: 2px solid var(--cedar);
+  outline: 2px solid var(--amber);
+}
+
+.login-card button {
+  width: 100%;
+  border: none;
+  border-radius: 12px;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--amber), var(--ember));
+  color: #1a0d05;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  font-family: "Inter", sans-serif;
 }
